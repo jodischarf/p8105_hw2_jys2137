@@ -5,8 +5,8 @@ date: "9/30/2021"
 output: github_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 library(tidyverse)
 library(readxl)
 ```
@@ -25,3 +25,26 @@ To that end:
 * I created a subdirectory to store the local data files used in this assignment, and used relative paths to access these data files
 * I will submit a link to my repo via Courseworks
 * I aim to adhere to appropriate styling and clarity of code in Problems 1+.
+
+
+## Problem 1
+
+### Cleaning the _Mr. Trash Wheel_ sheet
+
+The code chunk below is used to:
+
+- **clean** the `Mr. Trash Wheel` sheet by:
+  - omitting non-data entries (rows with notes / figures; columns containing notes)
+  - using reasonable variable names (clean names)
+  - omitting rows that do not include `dumpster`-specific data
+- **round** `sports_balls` to the nearest integer
+
+```{r clean_mr_trash_wheel}
+mr_trash_wheel_sheet = read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
+    sheet = "Mr. Trash Wheel", skip = 1) %>%
+  janitor::clean_names() %>%
+  select(dumpster:homes_powered) %>%
+  drop_na(dumpster) %>%
+  mutate(
+    sports_balls = round(sports_balls, digits = 0))
+```
