@@ -40,7 +40,8 @@ The code chunk below is used to:
 - **round** `sports_balls` to the nearest integer
 
 ```{r clean_mr_trash_wheel}
-mr_trash_wheel_sheet = read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
+mr_trash_wheel_sheet = 
+  read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
     sheet = "Mr. Trash Wheel", skip = 1) %>%
   janitor::clean_names() %>%
   select(dumpster:homes_powered) %>%
@@ -92,4 +93,41 @@ The _Mr. Trash Wheel_ dataset includes **`r nrow(mr_trash_wheel_sheet)`** observ
 ##### For the _precipitation_ data
 
 The precipitation data includes **`r nrow(precip_comb_data)`** observations, taking **`r ncol(precip_comb_data)`** variables into account. These **`r ncol(precip_comb_data)`** variables include `month`,  `total` precipitation in inches, and `year`. For available data, the total precipitation in 2018 was **`r precip_comb_data %>% filter(year == 2018) %>% pull(total) %>% sum()` in**.
+
+
+## Problem 2
+
+### Cleaning the _FiveThirtyEight_ datasets
+
+This problem uses the _FiveThirtyEight_ datasets:`pols-month.csv`, `unemployment.csv`, and `snp.csv`. The following includes steps to clean and merge these into a single data frame using year and month as keys.
+
+##### First, we clean `pols-month.csv`
+
+```{r clean_pols}
+pols_month_df = 
+  read_csv("./data/fivethirtyeight_datasets/pols-month.csv") %>%
+  separate("mon", into = c("year", "month", "day")) %>% 
+  mutate(
+    month = month.name[as.numeric(month)], 
+    month = str_to_lower(month),
+    president = recode(prez_gop, "0" = "dem", "1" = "gop", "2" = "gop")) %>% 
+ select(-starts_with("prez"), -day)
+```
+
+##### Second, we clean `snp.csv`
+
+Second, clean the data in snp.csv using a similar process to the above. For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns.
+```{r clean_snp}
+
+```
+
+##### Third, we clean `unemployment.csv`
+
+Third, tidy the unemployment data so that it can be merged with the previous datasets. This process will involve switching from “wide” to “long” format; ensuring that key variables have the same name; and ensuring that key variables take the same values.
+
+```{r clean_unemployment}
+
+```
+
+
 
