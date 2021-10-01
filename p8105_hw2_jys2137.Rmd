@@ -69,3 +69,20 @@ precip_2019 = read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
   drop_na(month, total) %>%
   mutate(year = 2019)
 ```
+
+### Combining precipitation datasets
+
+Next, we **combine** the precipitation datasets and **convert month** to a character variable.
+(the variable month.name is built into R and should be useful).
+
+### Description of the data
+
+##### For the _Mr. Trash Wheel_ data
+
+The _Mr. Trash Wheel_ dataset includes **`r nrow(mr_trash_wheel_sheet)`** observations, taking **`r ncol(mr_trash_wheel_sheet)`** variables into account. These `r ncol(mr_trash_wheel_sheet)` variables include information on each `dumpster` (including number, weight, and volume) and the amount of each litter type (including `plastic_bottles`, `polystyrene`, `cigarette_butts`, `glass_bottles`, `grocery_bags`, `chip_bags`, and `sports_balls`). The median number of sports balls in a dumpster in 2017 was **`r mr_trash_wheel_sheet %>% filter(year == 2017) %>% pull(sports_balls) %>% median()`**. 
+
+##### For the _precipitation_ data
+
+The precipitation data includes 
+Write a paragraph about these data; you are encouraged to use inline R. Be sure to note the number of observations in both resulting datasets, and give examples of key variables. For available data, what was the total precipitation in 2018? 
+  
