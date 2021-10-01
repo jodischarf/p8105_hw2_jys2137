@@ -1,0 +1,12 @@
+---
+title: "Homework 2"
+author: "jys2137"
+date: "9/30/2021"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The purpose of this file is to present the answers to Homework 2, an assignment reinforcing ideas in the **Data Wrangling I** topic for P8105. 
