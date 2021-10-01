@@ -45,8 +45,7 @@ mr_trash_wheel_sheet = read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.x
   janitor::clean_names() %>%
   select(dumpster:homes_powered) %>%
   drop_na(dumpster) %>%
-  mutate(
-    sports_balls = round(sports_balls, digits = 0))
+  mutate(sports_balls = round(sports_balls, digits = 0))
 ```
 
 ### Cleaning precipitation data for 2018 and 2019
@@ -56,24 +55,33 @@ The code chunk below **cleans** the precipitation data for 2018 and 2019 by:
 - omitting rows without precipitation data 
 - adding a variable for year
 
-```{r clean_precipitation_2018_2019}
-precip_2018 = read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
+```{r clean_precip_2018_2019}
+precip_2018 = 
+  read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
     sheet = "2018 Precipitation", skip = 1) %>%
   janitor::clean_names() %>%
   drop_na(month) %>%
   mutate(year = 2018)
 
-precip_2019 = read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
+precip_2019 = 
+  read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
     sheet = "2019 Precipitation", skip = 1) %>%
   janitor::clean_names() %>%
   drop_na(month, total) %>%
   mutate(year = 2019)
 ```
 
-### Combining precipitation datasets
+#### Combining precipitation datasets
 
 Next, we **combine** the precipitation datasets and **convert month** to a character variable.
-(the variable month.name is built into R and should be useful).
+
+```{r combine_precip_data}
+precip_comb_data = 
+  bind_rows(precip_2018, precip_2019) %>% 
+  mutate(
+    month = month.name[as.numeric(month)], 
+    month = str_to_lower(month))
+```
 
 ### Description of the data
 
@@ -83,6 +91,5 @@ The _Mr. Trash Wheel_ dataset includes **`r nrow(mr_trash_wheel_sheet)`** observ
 
 ##### For the _precipitation_ data
 
-The precipitation data includes 
-Write a paragraph about these data; you are encouraged to use inline R. Be sure to note the number of observations in both resulting datasets, and give examples of key variables. For available data, what was the total precipitation in 2018? 
-  
+The precipitation data includes **`r nrow(precip_comb_data)`** observations, taking **`r ncol(precip_comb_data)`** variables into account. These **`r ncol(precip_comb_data)`** variables include `month`,  `total` precipitation in inches, and `year`. For available data, the total precipitation in 2018 was **`r precip_comb_data %>% filter(year == 2018) %>% pull(total) %>% sum()` in**.
+
