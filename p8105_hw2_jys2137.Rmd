@@ -111,7 +111,7 @@ We clean the data by:
 - removing `prez_dem`, `prez_gop`, and `day`
 
 ```{r clean_pols}
-pols_month_df = 
+pols_df = 
   read_csv("./data/fivethirtyeight_datasets/pols-month.csv") %>%
   separate("mon", into = c("year", "month", "day"), convert = TRUE) %>% 
   mutate(
@@ -163,14 +163,35 @@ We join the datasets by merging snp into pols, and merging unemployment into the
 
 ```{r join_five_thirty_eight}
 pols_snp_data =
-  left_join(pols_month_df, snp_df)
+  left_join(pols_df, snp_df)
 
 fte_join_data =
   left_join(pols_snp_data, unemploy_df)
 ```
 
 ### Description of the _FiveThirtyEight_ datasets
-Write a short paragraph about these datasets. Explain briefly what each dataset contained, and describe the resulting dataset (e.g. give the dimension, range of years, and names of key variables).
 
+The `pols_df` data includes **`r nrow(pols_df)`** observations and **`r ncol(pols_df)`** variables, related to the number of politicians who are democratic (`dem`) or republican (`gop`) at any given time between `r min(pols_df$year)` and `r max(pols_df$year)`.
+
+The `snp_df` data includes **`r nrow(snp_df)`** observations and **`r ncol(snp_df)`** variables, related to Standard & Poor’s stock market index (S&P). This included the `year` and `month` of observation, and the associated `close` values of the S&P.
+
+The `unemploy_df` data includes **`r nrow(unemploy_df)`** observations and **`r ncol(unemploy_df)`** variables percentage of unemployment in each month (`january` through `december`) of the associated year from `r min(unemploy_df$year)` and `r max(unemploy_df$year)`.
+
+describe the resulting dataset (e.g. give the dimension, range of years, and names of key variables).
+
+The resulting dataset of **`r nrow(fte_join_data)`** observations and **`r ncol(fte_join_data)`** variables shows that between `r min(fte_join_data$year)` and `r max(fte_join_data$year)`, when a republican was `president`, the unemployment rate was **`r filter(fte_join_data, president == "gop") %>% pull(unemployment) %>% mean() %>% round(2)`%** and S&P was
+
+
+. When a democrat was `president`, the `unemployment` rate was **`r fte_join_data %>% drop_na(unemployment) %>% filter(president == "dem") %>% pull(unemployment) %>% mean() %>% round(2)`%** and the S%P was 
+
+. This dataset also has information on the `month` specific `unemployment` rates for each `year` and on the number of governors, senators, and representatives who were either democrats or republicans for each `month`.
+
+
+```{r}
+fte_join_data %>% 
+  drop_na(close) %>% 
+  filter(president == "dem") %>% 
+  pull(unemployment) %>% mean() %>% round(2)
+view(snp_df)
 
 
