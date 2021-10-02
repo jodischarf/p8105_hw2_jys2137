@@ -103,6 +103,13 @@ This problem uses the _FiveThirtyEight_ datasets:`pols-month.csv`, `snp.csv`, an
 
 ##### First, we clean `pols-month.csv`
 
+We clean the data by:
+
+- breaking up `mon` into integer variables `year`, `month`, and `day`
+- replacing month number with month name
+- creating `president` from values _gop_ and _dem_
+- removing `prez_dem`, `prez_gop`, and `day`
+
 ```{r clean_pols}
 pols_month_df = 
   read_csv("./data/fivethirtyeight_datasets/pols-month.csv") %>%
@@ -115,7 +122,9 @@ pols_month_df =
 ```
 
 ##### Second, we clean `snp.csv`
-For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns.
+
+For consistency across datasets, we arrange according to `year` and `month`, and organize so that `year` and `month` are the leading columns.
+
 ```{r clean_snp}
 snp_df = 
   read_csv("./data/fivethirtyeight_datasets/snp.csv") %>%
@@ -127,21 +136,41 @@ snp_df =
 ```
 
 ##### Third, we clean `unemployment.csv`
+Here, we tidy the unemployment data so that it can be merged with the previous datasets. This involves:
 
-Third, tidy the unemployment data so that it can be merged with the previous datasets. This process will involve switching from “wide” to “long” format; ensuring that key variables have the same name; and ensuring that key variables take the same values.
+- switching from “wide” to “long” format
+- ensuring that key variables have the same name
+- ensuring that key variables take the same values
 
 ```{r clean_unemployment}
-
+unemploy_df = 
+  read.csv("./data/fivethirtyeight_datasets/unemployment.csv") %>% 
+  janitor::clean_names() %>%
+  pivot_longer(
+    jan:dec,
+    names_to = "month", 
+    values_to = "unemployment") %>% 
+  mutate(
+    month = recode(month,
+              jan = "january", feb = "february", mar = "march", apr = "april",
+              may = "may", jun = "june", jul = "july", aug = "august",
+              sep = "september", oct = "october", nov = "november", dec = "december"))
 ```
 
-##### Lastly, we merge the datasets
+##### Lastly, we join the datasets
 
-Join the datasets by merging snp into pols, and merging unemployment into the result.
+We join the datasets by merging snp into pols, and merging unemployment into the result.
 
+```{r join_five_thirty_eight}
+pols_snp_data =
+  left_join(pols_month_df, snp_df)
+
+fte_join_data =
+  left_join(pols_snp_data, unemploy_df)
+```
+
+### Description of the _FiveThirtyEight_ datasets
 Write a short paragraph about these datasets. Explain briefly what each dataset contained, and describe the resulting dataset (e.g. give the dimension, range of years, and names of key variables).
-
-Note: we could have used a date variable as a key instead of creating year and month keys; doing so would help with some kinds of plotting, and be a more accurate representation of the data. Date formats are tricky, though. For more information check out the lubridate package in the tidyverse.
-
 
 
 
