@@ -9,6 +9,8 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 library(tidyverse)
 library(readxl)
+library(knitr)
+
 ```
 
 The purpose of this file is to present the answers to Homework 2, an assignment reinforcing ideas in the **Data Wrangling I** topic for P8105. 
@@ -23,8 +25,8 @@ To that end:
 * I created a public GitHub repo + local R Project; we suggest naming this repo / directory p8105_hw2_jys2137
 * I created a single .Rmd file named p8105_hw2_jys2137.Rmd that renders to github_document
 * I created a subdirectory to store the local data files used in this assignment, and used relative paths to access these data files
-* I will submit a link to my repo via Courseworks
-* I aim to adhere to appropriate styling and clarity of code in Problems 1+.
+* I submitted a link to my repo via Courseworks
+* I aimed to adhere to appropriate styling and clarity of code in Problems 1+.
 
 
 ## Problem 1
@@ -41,7 +43,7 @@ The code chunk below is used to:
 
 ```{r clean_mr_trash_wheel}
 mr_trash_wheel_sheet = 
-  read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
+  read_excel("./data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx",
     sheet = "Mr. Trash Wheel", skip = 1) %>%
   janitor::clean_names() %>%
   select(dumpster:homes_powered) %>%
@@ -58,14 +60,14 @@ The code chunk below **cleans** the precipitation data for 2018 and 2019 by:
 
 ```{r clean_precip_2018_2019}
 precip_2018 = 
-  read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
+  read_excel("./data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx",
     sheet = "2018 Precipitation", skip = 1) %>%
   janitor::clean_names() %>%
   drop_na(month) %>%
   mutate(year = 2018)
 
 precip_2019 = 
-  read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
+  read_excel("./data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx",
     sheet = "2019 Precipitation", skip = 1) %>%
   janitor::clean_names() %>%
   drop_na(month, total) %>%
@@ -185,3 +187,99 @@ The `unemploy_df` data includes **`r nrow(unemploy_df)`** observations and **`r 
 The resulting dataset (with `pols_df`,`snp_df`, and `unemploy_df` combined) of **`r nrow(fte_join_data)`** observations and **`r ncol(fte_join_data)`** variables shows that between `r min(fte_join_data$year)` and `r max(fte_join_data$year)`, when a republican was `president`, the unemployment rate was **`r filter(fte_join_data, president == "gop") %>% pull(unemployment) %>% mean() %>% round(2)`%** and S&P was **`r filter(fte_join_data, president == "gop") %>% pull(close) %>% mean() %>% round(2)`** On the other hand, when a democrat was `president`, the `unemployment` rate was **`r fte_join_data %>% drop_na(unemployment) %>% filter(president == "dem") %>% pull(unemployment) %>% mean() %>% round(2)`%** and the S%P was **`r fte_join_data %>% drop_na(close) %>% filter(president == "dem") %>% pull(close) %>% mean() %>% round(2)`**
 
 This dataset also has information on the `month` specific `unemployment` rates for each `year` and on the number of governors, senators, and representatives who were either democrats or republicans for each `month`.
+
+
+
+## Problem 3
+***Load and tidy the data. Note that, although these data may seem fairly well formatted initially, the names of a categorical predictor and the case structure of string variables changed over time; you’ll need to address this in your data cleaning. Also, some rows seem duplicated, and these will need to be removed (hint: google something like “dplyr remove duplicate rows” to get started).
+
+### Cleaning the _Popular Baby Names_ data
+
+Here, we are using data from NYC Open data on the popularity of baby names. First, we tidy the data as shown in the code chunk below.
+
+```{r baby_names}
+baby_names_df = 
+  read_csv("./data/Popular_Baby_Names.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    ethnicity = str_to_lower(ethnicity),
+    childs_first_name = str_to_lower(childs_first_name),
+    gender = str_to_lower(gender),
+    ethnicity = recode(ethnicity, 
+                       "asian and paci" = "asian and pacific islander", 
+                       "black non hisp" = "black non hispanic",
+                       "white non hisp" = "white non hispanic")) %>% 
+  distinct()
+  
+```
+### Creating a table: rank in popularity of _"Olivia"_ as a female baby name 
+Now, we produce a table showing the rank in popularity of the name “Olivia” as a female baby name over time. In this table: _ethnicities are in rows_ and  _years are in columns_.
+
+```{r olivia_table, echo=TRUE}
+olivia_table = 
+  baby_names_df %>%
+  filter(childs_first_name == "olivia") %>% 
+  select(-gender, -childs_first_name, -count) %>% 
+  pivot_wider(names_from = year_of_birth, values_from = rank)
+
+kable(olivia_table)
+
+```
+
+### Creating a table: most popular name among male children
+Here, we produce a similar table as the one above, that shows the most popular name among male children over time. In this table: _ethnicities are in rows_ and  _years are in columns_.
+
+```{r male_names}
+male_names_table = 
+  baby_names_df %>%
+  filter(rank == "1", gender == "male") %>% 
+  select(-gender, -count, -rank) %>% 
+  pivot_wider(names_from = year_of_birth, values_from = childs_first_name)
+
+kable(male_names_table)
+
+```
+
+### Creating a scatter plot: rank of male white non-hispanic children names in 2016
+Finally, we create a **scatter plot** for _male, white non-hispanic children born in 2016_. The number of children with a name (y axis) is against the rank in popularity of that name (x axis).
+```{r final_scatterplot, warning=FALSE}
+male_nhw_2016 = 
+  baby_names_df %>% 
+  filter(gender == "male", ethnicity == "white non hispanic", year_of_birth == 2016)
+
+ggplot(male_nhw_2016, aes(x = rank, y = count, color = rank)) + 
+  geom_point(alpha = .5) +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(
+    title = "Popularity of names among male white non-hispanic children in 2016",
+    x = "Rank in popularity",
+    y = "Number of children",
+    caption = "Data from Popular Baby Names dataset")
+ggsave("male_nhw_2016.pdf", height = 4, width = 6)
+
+```
+
+
+
+```{r}
+male_nhw_2016_draft = 
+  baby_names_df %>% 
+  filter(gender == "male", ethnicity == "white non hispanic", year_of_birth == 2016)
+
+library(ggrepel)
+
+newtable = ggplot(male_nhw_2016_draft, aes(x = rank, y = count, color = rank)) + 
+  geom_point(alpha = .5) +
+  labs(
+    title = "Popularity of names among male white non-hispanic children in 2016",
+    x = "Rank in popularity",
+    y = "Number of children",
+    caption = "Data from Popular Baby Names dataset") +
+  theme(legend.position = "none") +
+  geom_label_repel(aes(label = ifelse(rank <= 5, as.character(childs_first_name),'')),
+                   size = 3,
+                   box.padding = 1,
+                   point.padding = .1) +
+  scale_color_gradient(low = "blue", high = "red")
+newtable
+```
